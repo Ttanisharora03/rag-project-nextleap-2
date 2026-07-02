@@ -1,12 +1,14 @@
 """
 Centralized configuration module for the Mutual Fund FAQ Assistant.
 
-Loads all settings from environment variables (via .env file) and exposes
+Loads all settings from environment variables (via .env file) 
+and exposes-
 them as typed constants for use across the application.
 """
 
 import os
 from pathlib import Path
+# pyrefly: ignore [missing-import]
 from dotenv import load_dotenv
 
 # ---------------------------------------------------------------------------
