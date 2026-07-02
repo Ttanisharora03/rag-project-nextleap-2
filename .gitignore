@@ -1,0 +1,44 @@
+# =============================================================================
+# Mutual Fund FAQ Assistant - .gitignore
+# =============================================================================
+
+# Virtual environment
+venv/
+.venv/
+
+# Environment variables (contains API keys)
+.env
+
+# Vector store (persisted ChromaDB data)
+vectorstore/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+
+# Data artifacts (raw scraped data can be regenerated)
+data/raw/
+
+# Agents configuration
+.agents/
