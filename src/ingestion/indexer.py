@@ -6,8 +6,8 @@ import logging
 from pathlib import Path
 import shutil
 
-from langchain_community.vectorstores import Chroma
-from langchain_community.embeddings import HuggingFaceBgeEmbeddings
+from langchain_chroma import Chroma
+from langchain_huggingface import HuggingFaceBgeEmbeddings
 
 from src.config import CHROMA_PERSIST_DIR, CHROMA_COLLECTION, EMBEDDING_MODEL
 from src.ingestion.chunker import run_chunker
