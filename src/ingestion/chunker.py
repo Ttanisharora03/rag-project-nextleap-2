@@ -7,7 +7,9 @@ import logging
 from pathlib import Path
 from typing import Any
 
+# pyrefly: ignore [missing-import]
 from langchain_core.documents import Document
+# pyrefly: ignore [missing-import]
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from src.config import PROCESSED_DATA_DIR

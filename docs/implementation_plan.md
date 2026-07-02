@@ -144,7 +144,7 @@ flowchart LR
 | 2.1 | Build web scraper | `src/ingestion/scraper.py` | Fetch HTML from 8 Groww URLs using `requests` + `BeautifulSoup4`. Extract text content, save raw files to `data/raw/`. Attach metadata: `source_url`, `scheme_name`, `scrape_date`. |
 | 2.2 | Build document preprocessor | `src/ingestion/preprocessor.py` | Strip navigation, headers, footers, ads. Normalize whitespace. Extract structured sections (Expense Ratio, Exit Load, SIP details, etc.). Save to `data/processed/`. |
 | 2.3 | Build text chunker | `src/ingestion/chunker.py` | Create a structured "Golden Chunk" combining all key-value pairs (Expense ratio, Exit load, etc.). Pass remaining text through LangChain `RecursiveCharacterTextSplitter` (size: ~500, overlap: ~50). Preserve metadata (`source_url`, `scheme_name`) on all chunks. |
-| 2.4 | Build indexer | `src/ingestion/indexer.py` | Load chunks → embed using `BAAI/bge-small-en-v1.5` → store in ChromaDB collection `icici_prudential_mf_corpus`. Persist to `vectorstore/`. |
+| 2.4 | Build indexer | `src/ingestion/indexer.py` | Load chunks → embed using `BAAI/bge-small-en-v1.5` (sufficient for highly explicit Golden Chunks) → store in ChromaDB collection `icici_prudential_mf_corpus`. Persist to `vectorstore/`. |
 | 2.5 | Create ingestion runner | `src/ingestion/__init__.py` | CLI entry point: `python -m src.ingestion.indexer` to run full pipeline end-to-end. |
 | 2.6 | Validate ingestion output | Manual | Verify chunk count, metadata integrity, and sample similarity searches. |
 
@@ -154,7 +154,7 @@ flowchart LR
 |----------|--------|-----------|
 | Chunk size | ~500 tokens | Balances context richness with retrieval precision for short factual content |
 | Chunk overlap | ~50 tokens | Prevents splitting mid-sentence at boundaries |
-| Embedding model | `BAAI/bge-small-en-v1.5` | Open-source, 384-dim, top-tier retrieval on MTEB benchmarks |
+| Embedding model | `BAAI/bge-small-en-v1.5` | 384-dim is highly optimized, fast, and completely sufficient for matching user FAQs against our explicit Golden Chunks. A large model is unnecessary overhead. |
 | Vector store | ChromaDB (local) | Zero infrastructure, file-persisted, good for prototype |
 
 ### Exit Criteria
