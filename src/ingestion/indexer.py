@@ -6,7 +6,9 @@ import logging
 from pathlib import Path
 import shutil
 
+# pyrefly: ignore [missing-import]
 from langchain_chroma import Chroma
+# pyrefly: ignore [missing-import]
 from langchain_huggingface import HuggingFaceBgeEmbeddings
 
 from src.config import CHROMA_PERSIST_DIR, CHROMA_COLLECTION, EMBEDDING_MODEL
