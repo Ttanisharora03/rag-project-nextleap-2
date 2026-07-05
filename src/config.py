@@ -31,6 +31,14 @@ LLM_TEMPERATURE: float = float(os.getenv("LLM_TEMPERATURE", "0.0"))
 LLM_MAX_TOKENS: int = int(os.getenv("LLM_MAX_TOKENS", "200"))
 
 # ---------------------------------------------------------------------------
+# Rate Limits (Groq Free Tier)
+# ---------------------------------------------------------------------------
+GROQ_RPM_LIMIT: int = int(os.getenv("GROQ_RPM_LIMIT", "30"))
+GROQ_RPD_LIMIT: int = int(os.getenv("GROQ_RPD_LIMIT", "1000"))
+GROQ_TPM_LIMIT: int = int(os.getenv("GROQ_TPM_LIMIT", "12000"))
+GROQ_TPD_LIMIT: int = int(os.getenv("GROQ_TPD_LIMIT", "100000"))
+
+# ---------------------------------------------------------------------------
 # ChromaDB / Vector Store
 # ---------------------------------------------------------------------------
 CHROMA_COLLECTION: str = os.getenv("CHROMA_COLLECTION", "icici_prudential_mf_corpus")

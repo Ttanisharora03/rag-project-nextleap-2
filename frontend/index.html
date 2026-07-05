@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant - ICICI Prudential</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Using Phosphor Icons for the UI icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>ICICI Prudential Explore</h2>
+            </div>
+            
+            <ul class="nav-links">
+                <li>
+                    <a href="#" class="nav-item">
+                        <i class="ph ph-house"></i>
+                        <span>Home</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="nav-item">
+                        <i class="ph ph-compass"></i>
+                        <span>Discover</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="nav-item">
+                        <i class="ph ph-bookmark-simple"></i>
+                        <span>Watchlist</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="nav-item active">
+                        <i class="ph ph-robot"></i>
+                        <span>AI Assistant</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <button class="btn-primary ask-ai-btn">
+                    <i class="ph ph-robot"></i>
+                    <span>Ask AI</span>
+                </button>
+                <a href="#" class="nav-item">
+                    <i class="ph ph-gear"></i>
+                    <span>Settings</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="ph ph-scales"></i>
+                    <span>Legal</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Main Chat Area -->
+        <main class="chat-container">
+            <!-- Chat Header -->
+            <header class="chat-header">
+                <div class="header-left">
+                    <button class="icon-btn close-btn"><i class="ph ph-x"></i></button>
+                    <div class="header-titles">
+                        <h1>ICICI Pru Value Discovery Fund</h1>
+                        <div class="subtitle">
+                            <span class="status-dot"></span>
+                            <span>AI Assistant</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <button class="icon-btn"><i class="ph ph-info"></i></button>
+                </div>
+            </header>
+
+            <!-- Persistent Disclaimer Banner (Phase 6.4) -->
+            <div class="disclaimer-banner">
+                <i class="ph-fill ph-warning-circle"></i> Facts-only. No investment advice.
+            </div>
+
+            <!-- Chat History -->
+            <div class="chat-history" id="chat-history">
+                <!-- Initial Welcome Message -->
+                <div class="message bot-message">
+                    <div class="avatar"><i class="ph ph-robot"></i></div>
+                    <div class="message-content">
+                        Hello! I'm your AI Assistant for the ICICI Pru Value Discovery Fund. I can help you understand fund performance, tax implications, exit loads, or answer specific questions based on the Scheme Information Document.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Input Area -->
+            <div class="chat-input-wrapper">
+                <div class="suggested-questions">
+                    <button class="pill-btn"><i class="ph ph-question"></i> What is the exit load?</button>
+                    <button class="pill-btn"><i class="ph ph-plant"></i> Is this fund tax-saving?</button>
+                    <button class="pill-btn"><i class="ph ph-chart-line-up"></i> Show risk metrics</button>
+                </div>
+                
+                <form id="chat-form" class="input-form">
+                    <div class="input-container">
+                        <button type="button" class="icon-btn mic-btn"><i class="ph ph-microphone"></i></button>
+                        <input type="text" id="chat-input" placeholder="Ask anything about this fund..." autocomplete="off" required>
+                        <button type="submit" class="send-btn"><i class="ph-fill ph-paper-plane-right"></i></button>
+                    </div>
+                </form>
+                
+                <div class="disclaimer">
+                    AI insights are for informational purposes only. Mutual Fund investments are subject to market risks, read all scheme related documents carefully.
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>

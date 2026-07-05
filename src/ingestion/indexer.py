@@ -5,11 +5,13 @@ Embeds chunks and stores them in ChromaDB.
 import logging
 from pathlib import Path
 import shutil
+import json
+from datetime import datetime
 
 # pyrefly: ignore [missing-import]
 from langchain_chroma import Chroma
 # pyrefly: ignore [missing-import]
-from langchain_huggingface import HuggingFaceBgeEmbeddings
+from langchain_community.embeddings import HuggingFaceBgeEmbeddings
 
 from src.config import CHROMA_PERSIST_DIR, CHROMA_COLLECTION, EMBEDDING_MODEL
 from src.ingestion.chunker import run_chunker
@@ -64,7 +66,24 @@ def run_indexer():
         persist_directory=str(persist_path)
     )
     
-    logger.info("Indexing complete and persisted to vectorstore.")
+    # 5. Generate and save index manifest
+    schemes = set(doc.metadata.get("scheme_name", "Unknown") for doc in documents)
+    chunk_types = set(doc.metadata.get("chunk_type", "Unknown") for doc in documents)
+    
+    manifest = {
+        "indexed_at": datetime.utcnow().isoformat() + "Z",
+        "total_chunks": len(documents),
+        "collection_name": CHROMA_COLLECTION,
+        "embedding_model": EMBEDDING_MODEL,
+        "schemes_indexed": list(schemes),
+        "chunk_types": list(chunk_types)
+    }
+    
+    manifest_path = persist_path / "index_manifest.json"
+    with open(manifest_path, "w", encoding="utf-8") as f:
+        json.dump(manifest, f, indent=2)
+        
+    logger.info(f"Indexing complete. Manifest saved to {manifest_path}")
     return vectorstore
 
 

@@ -170,11 +170,26 @@ flowchart LR
 ## Phase 3: Query Pipeline (RAG Core)
 
 ### Objective
-Build the core RAG query pipeline: embed user queries, retrieve relevant chunks from ChromaDB, assemble context, and generate factual responses using an LLM.
+Build the core RAG query pipeline: embed user queries, retrieve relevant chunks from ChromaDB, assemble context, and generate factual responses using an LLM — while respecting Groq's strict free-tier rate limits.
 
 ### Architecture Reference
 - [§3.2 Query Pipeline](file:///c:/Users/tanis/rag%20chatbot%20NextLeap/docs/architecture.md#L136-L237)
 - [§7.2 Query Flow](file:///c:/Users/tanis/rag%20chatbot%20NextLeap/docs/architecture.md#L362-L393)
+
+### Groq Rate Limits (`llama-3.3-70b-versatile` — Free Tier)
+
+> [!IMPORTANT]
+> These are hard ceilings enforced by Groq. Exceeding any limit returns HTTP 429.
+
+| Resource | Per-Minute Limit | Per-Day Limit |
+|----------|-----------------|---------------|
+| Requests | 30 RPM | 1,000 RPD |
+| Tokens | 12,000 TPM | 100,000 TPD |
+
+**Design implications:**
+- With `max_tokens=200` for output and ~500–800 tokens of context + system prompt per request, each call consumes ~700–1,000 tokens → **≤12 requests/min** before hitting TPM.
+- Daily budget of 100K tokens ≈ **100–140 full requests/day** at typical usage.
+- The rate limiter must track **both** request count and token count across both time windows.
 
 ### Tasks
 
@@ -183,8 +198,36 @@ Build the core RAG query pipeline: embed user queries, retrieve relevant chunks 
 | 3.1 | Build retriever | `src/query/retriever.py` | Embed user query → cosine similarity search in ChromaDB → return top 3–5 chunks with metadata. Support optional scheme-name metadata filtering. |
 | 3.2 | Design system prompt | `src/query/generator.py` | Implement the system prompt template from [§3.2.3](file:///c:/Users/tanis/rag%20chatbot%20NextLeap/docs/architecture.md#L174-L198). Enforce all 8 rules (facts-only, 3 sentences, 1 citation, etc.). |
 | 3.3 | Build LLM generator | `src/query/generator.py` | Send system prompt + retrieved context + user query to Groq (`llama-3.3-70b-versatile`). Use temperature `0.0`, max tokens `200`. |
-| 3.4 | Build end-to-end RAG chain | `src/query/` | Wire retriever → context assembly → LLM generation into a single callable function. |
-| 3.5 | Test with sample queries | Manual | Test factual queries like "What is the exit load for Flexicap Fund?" and verify response quality, citation accuracy, and brevity. |
+| 3.4 | Build rate limiter | `src/query/rate_limiter.py` | Implement a rate limiter that enforces Groq's free-tier limits. See **Rate Limiter Design** below. |
+| 3.5 | Build end-to-end RAG chain | `src/query/` | Wire retriever → context assembly → **rate limiter check** → LLM generation into a single callable function. |
+| 3.6 | Test with sample queries | Manual | Test factual queries like "What is the exit load for Flexicap Fund?" and verify response quality, citation accuracy, and brevity. Also verify rate limiter blocks when limits are exhausted. |
+
+### Rate Limiter Design (`src/query/rate_limiter.py`)
+
+A lightweight, in-process rate limiter using sliding-window counters. No external dependencies.
+
+```mermaid
+flowchart TD
+    REQ["Incoming LLM Request"] --> CHK{"Check all 4 limits"}
+    CHK -->|"Any limit exceeded"| WAIT["Wait / Return 429 with retry-after"]
+    CHK -->|"All clear"| CALL["Call Groq API"]
+    CALL --> REC["Record usage: +1 request, +N tokens"]
+    CALL -->|"HTTP 429 from Groq"| BACK["Exponential backoff (max 3 retries)"]
+    BACK --> CHK
+```
+
+**Implementation details:**
+
+| Aspect | Detail |
+|--------|--------|
+| **Tracking** | 4 sliding-window counters: requests/min, requests/day, tokens/min, tokens/day |
+| **Token estimation** | Before calling the LLM, estimate prompt tokens (system + context + query) using `len(text) / 4` heuristic; add `max_tokens` (200) for output budget |
+| **Pre-flight check** | Before each LLM call, verify all 4 counters have headroom. If not, return a friendly "Service is temporarily busy" message without calling Groq. |
+| **Post-call recording** | After a successful call, record actual token usage from the Groq response's `usage` field |
+| **Retry strategy** | On HTTP 429 from Groq: exponential backoff (1s, 2s, 4s), max 3 retries |
+| **Graceful degradation** | When daily limits approach 90%, log a warning. When exhausted, return user-friendly message: "I've reached my daily limit. Please try again tomorrow." |
+| **Storage** | In-memory (resets on restart). Sufficient for a single-instance prototype. |
+| **Config** | All limits defined as constants in `src/config.py` and loaded from `.env` for easy override |
 
 ### System Prompt (from architecture)
 
@@ -209,11 +252,14 @@ USER QUESTION:
 ```
 
 ### Exit Criteria
-- [ ] Retriever returns relevant chunks for scheme-specific queries
-- [ ] LLM generates ≤ 3 sentence responses
-- [ ] Each response contains exactly 1 citation link
-- [ ] "Last updated" footer is present
-- [ ] Responses are factually grounded in retrieved context
+- [x] Retriever returns relevant chunks for scheme-specific queries
+- [x] LLM generates ≤ 3 sentence responses
+- [x] Each response contains exactly 1 citation link
+- [x] "Last updated" footer is present
+- [x] Responses are factually grounded in retrieved context
+- [x] Rate limiter correctly blocks requests when per-minute limits are exceeded
+- [x] Rate limiter correctly blocks requests when daily limits are exhausted
+- [x] User sees friendly message (not raw 429 error) when rate-limited
 
 ---
 
@@ -364,7 +410,7 @@ Build a clean, minimal, Groww-inspired chat interface with a welcome screen, exa
 │  │                                    │       │
 │  │  [Bot]: The exit load for ...      │       │
 │  │  📎 Source: groww.in/...           │       │
-│  │  🕐 Last updated: 2026-07-01      │       │
+│  │  🕐 Last updated: 2026-07-01       │       │
 │  │                                    │       │
 │  └────────────────────────────────────┘       │
 │                                              │
@@ -459,7 +505,8 @@ End-to-end integration testing, edge case validation, bug fixing, documentation,
 | Groww blocks scraping requests | **High** — no data | Medium | Use proper headers, rate limiting; cache scraped data locally |
 | Groww page structure changes | **Medium** — broken parsing | Medium | Use resilient CSS selectors; add scraper validation |
 | LLM generates advisory content | **High** — compliance violation | Low | Strict system prompt + output guardrails + validation |
-| Groq API rate limits exceeded | **Medium** — service downtime | Low | Groq free tier has generous limits; add retry with backoff |
+| Groq API rate limits exceeded | **High** — service unavailable | **High** | Free tier is very tight: 30 RPM, 1K RPD, 12K TPM, 100K TPD. Mitigated by `src/query/rate_limiter.py` with pre-flight checks, sliding-window counters, exponential backoff, and graceful user-facing messages. See Phase 3 Rate Limiter Design. |
+| Daily token budget exhaustion | **High** — complete outage for the day | Medium | At ~700–1000 tokens/request, only ~100–140 queries/day are possible. Rate limiter tracks daily token usage, warns at 90%, and returns a friendly "try again tomorrow" message when exhausted. |
 | ChromaDB performance at scale | **Low** — slow retrieval | Low | Only 8 schemes; not a concern at this scale |
 
 ---
