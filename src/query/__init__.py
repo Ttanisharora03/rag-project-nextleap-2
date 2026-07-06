@@ -12,7 +12,7 @@ from src.query.rate_limiter import RateLimitException
 
 logger = logging.getLogger(__name__)
 
-def query_rag(user_query: str) -> dict:
+def query_rag(user_query: str, fund_name: str = None) -> dict:
     """
     End-to-end RAG pipeline for a user query.
     1. Classify
@@ -36,7 +36,7 @@ def query_rag(user_query: str) -> dict:
         }
         
     # 3. Retrieve Context
-    chunks = retrieve_context(user_query)
+    chunks = retrieve_context(user_query, fund_name=fund_name)
     if not chunks:
         return {
             "answer": "I don't have this information in my sources.",

@@ -4,6 +4,7 @@ from typing import Optional, List
 
 class ChatRequest(BaseModel):
     query: str = Field(..., min_length=1, max_length=500, description="User's query about ICICI Prudential mutual funds")
+    fund_name: Optional[str] = Field(None, description="The specific fund name context")
 
 class ChatResponse(BaseModel):
     answer: str

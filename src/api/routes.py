@@ -15,7 +15,7 @@ router = APIRouter()
 async def chat_endpoint(request: ChatRequest):
     try:
         # Run the RAG pipeline
-        result = query_rag(request.query)
+        result = query_rag(request.query, fund_name=request.fund_name)
         
         answer = result.get("answer", "")
         response_type = result.get("type", "factual")

@@ -42,7 +42,7 @@ def get_vectorstore() -> Chroma:
         )
     return _vectorstore
 
-def retrieve_context(query: str, top_k: int = RETRIEVER_TOP_K) -> List[Document]:
+def retrieve_context(query: str, top_k: int = RETRIEVER_TOP_K, fund_name: str = None) -> List[Document]:
     """
     Retrieve the top K most relevant chunks for the given query.
     """
@@ -50,6 +50,10 @@ def retrieve_context(query: str, top_k: int = RETRIEVER_TOP_K) -> List[Document]
     vectorstore = get_vectorstore()
     
     # Perform similarity search
-    results = vectorstore.similarity_search(query, k=top_k)
+    search_kwargs = {"k": top_k}
+    if fund_name:
+        search_kwargs["filter"] = {"scheme_name": fund_name}
+        
+    results = vectorstore.similarity_search(query, **search_kwargs)
     logger.info(f"Retrieved {len(results)} chunks.")
     return results

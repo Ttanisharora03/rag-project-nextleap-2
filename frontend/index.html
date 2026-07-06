@@ -10,6 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <!-- Using Phosphor Icons for the UI icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Chart.js for Fund Performance -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="app-container">
@@ -21,25 +23,25 @@
             
             <ul class="nav-links">
                 <li>
-                    <a href="#" class="nav-item">
+                    <a href="#" class="nav-item" id="nav-home">
                         <i class="ph ph-house"></i>
                         <span>Home</span>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="nav-item">
+                    <a href="#" class="nav-item" id="nav-discover">
                         <i class="ph ph-compass"></i>
                         <span>Discover</span>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="nav-item">
+                    <a href="#" class="nav-item" id="nav-watchlist">
                         <i class="ph ph-bookmark-simple"></i>
                         <span>Watchlist</span>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="nav-item active">
+                    <a href="#" class="nav-item active" id="nav-assistant">
                         <i class="ph ph-robot"></i>
                         <span>AI Assistant</span>
                     </a>
@@ -55,15 +57,94 @@
                     <i class="ph ph-gear"></i>
                     <span>Settings</span>
                 </a>
-                <a href="#" class="nav-item">
+                <a href="#" class="nav-item" id="nav-legal">
                     <i class="ph ph-scales"></i>
-                    <span>Legal</span>
+                    <span>Legal & Disclaimer</span>
                 </a>
             </div>
         </nav>
 
+        <!-- Main Legal Area -->
+        <main class="view-container" id="legal-view" style="display: none;">
+            <header class="view-header">
+                <h1>Legal & Disclaimers</h1>
+                <p>Please read this important information before proceeding.</p>
+            </header>
+            
+            <div class="legal-content" style="max-width: 800px; display: flex; flex-direction: column; gap: 1.5rem;">
+                <div class="warning-banner" style="background-color: rgba(230, 131, 100, 0.1); border-left: 4px solid var(--accent-color); padding: 1.5rem; border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0;">
+                    <h3 style="color: var(--accent-color); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 8px;">
+                        <i class="ph ph-warning-circle" style="font-size: 1.5rem;"></i>
+                        Information Only
+                    </h3>
+                    <p style="color: var(--text-primary); line-height: 1.6;">
+                        <strong>We do not suggest or recommend any stocks, mutual funds, or financial instruments.</strong> 
+                        This site is built strictly for informational and educational purposes. The data presented here is limited to a small number of funds to demonstrate AI capabilities. Always consult with a certified financial advisor and thoroughly read the Scheme Information Document before making any investment decisions.
+                    </p>
+                </div>
+            </div>
+        </main>
+
+        <!-- Main Home Area -->
+        <main class="view-container" id="home-view" style="display: none;">
+            <header class="view-header">
+                <h1>Welcome to ICICI Prudential</h1>
+                <p>Things to keep in mind before investing your hard-earned money.</p>
+            </header>
+            <div class="home-content">
+                <div class="info-card">
+                    <i class="ph ph-target" style="font-size: 2rem; color: var(--accent-color);"></i>
+                    <h3>1. Define Your Goals</h3>
+                    <p>Are you saving for retirement, a new home, or short-term needs? Your investment timeline dictates your risk capacity.</p>
+                </div>
+                <div class="info-card">
+                    <i class="ph ph-scales" style="font-size: 2rem; color: var(--accent-color);"></i>
+                    <h3>2. Assess Your Risk Tolerance</h3>
+                    <p>Higher returns usually come with higher risks. Ensure you are comfortable with market fluctuations before choosing equity-heavy funds.</p>
+                </div>
+                <div class="info-card">
+                    <i class="ph ph-chart-pie-slice" style="font-size: 2rem; color: var(--accent-color);"></i>
+                    <h3>3. Diversify Your Portfolio</h3>
+                    <p>Don't put all your eggs in one basket. Spread your investments across different asset classes to minimize potential losses.</p>
+                </div>
+                <div class="info-card">
+                    <i class="ph ph-read-cv-logo" style="font-size: 2rem; color: var(--accent-color);"></i>
+                    <h3>4. Read the Fine Print</h3>
+                    <p>Always review the Scheme Information Document carefully. Pay attention to exit loads, expense ratios, and tax implications.</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- Main Discover Area -->
+        <main class="view-container" id="discover-view" style="display: none;">
+            <header class="view-header">
+                <h1>Discover Funds</h1>
+                <p>Search for specific funds by name or category.</p>
+            </header>
+            
+            <div class="search-container">
+                <i class="ph ph-magnifying-glass search-icon"></i>
+                <input type="text" id="fund-search" placeholder="Search by name, e.g. 'Flexicap' or 'Technology'..." autocomplete="off">
+            </div>
+
+            <div class="fund-grid" id="discover-grid">
+                <!-- Search results will be rendered here by app.js -->
+            </div>
+        </main>
+
+        <!-- Main Watchlist Area -->
+        <main class="view-container" id="watchlist-view" style="display: none;">
+            <header class="view-header">
+                <h1>Mutual Fund Watchlist</h1>
+                <p>Select a fund to analyze it with the AI Assistant.</p>
+            </header>
+            <div class="fund-grid" id="fund-grid">
+                <!-- Fund cards will be rendered here by app.js -->
+            </div>
+        </main>
+
         <!-- Main Chat Area -->
-        <main class="chat-container">
+        <main class="chat-container" id="chat-view">
             <!-- Chat Header -->
             <header class="chat-header">
                 <div class="header-left">
@@ -103,6 +184,12 @@
                     <button class="pill-btn"><i class="ph ph-question"></i> What is the exit load?</button>
                     <button class="pill-btn"><i class="ph ph-plant"></i> Is this fund tax-saving?</button>
                     <button class="pill-btn"><i class="ph ph-chart-line-up"></i> Show risk metrics</button>
+                    <button class="pill-btn"><i class="ph ph-percent"></i> What is the expense ratio?</button>
+                    <button class="pill-btn"><i class="ph ph-bank"></i> What is the fund size?</button>
+                    <button class="pill-btn"><i class="ph ph-list-bullets"></i> What are the top holdings?</button>
+                    <button class="pill-btn"><i class="ph ph-coins"></i> What is the minimum SIP amount?</button>
+                    <button class="pill-btn"><i class="ph ph-trend-up"></i> What are the 1Y, 3Y, 5Y returns?</button>
+                    <button class="pill-btn"><i class="ph ph-user-circle"></i> Who is the fund manager?</button>
                 </div>
                 
                 <form id="chat-form" class="input-form">
