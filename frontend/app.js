@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error("Error communicating with backend:", error);
             removeTypingIndicator();
-            appendBotMessage("Sorry, I am having trouble connecting to the server right now. Ensure the backend is running at http://127.0.0.1:8000.");
+            appendBotMessage("Sorry, I am having trouble connecting to the server right now. Please ensure the backend is running and you are connected to the internet.");
         }
     };
 
