@@ -1,99 +1,136 @@
 # Deployment Plan
 
-This guide outlines the steps to deploy the RAG Chatbot project with the **Backend hosted on Render** and the **Frontend hosted on Vercel**.
-
-## 1. Prerequisites
-- A GitHub account with the project repository pushed to the `main` branch.
-- A [Render](https://render.com/) account.
-- A [Vercel](https://vercel.com/) account.
-- A Groq API Key.
-
-## 2. Backend Deployment (Render)
-
-Render is a great free alternative for hosting Python/FastAPI applications directly from a GitHub repository.
-
-### Step 2.1: Prepare the Repository
-1. Ensure your `requirements.txt` is up-to-date and at the root of the project. It should include `fastapi`, `uvicorn`, `langchain`, `langchain-huggingface`, `langchain-groq`, `chromadb`, and `sentence-transformers`.
-2. Ensure your processed data JSON files (`data/processed/*.json`) are committed to the repository so the backend can load them during deployment.
-
-### Step 2.2: Deploy to Render
-1. Go to the [Render Dashboard](https://dashboard.render.com/) and click **New** > **Web Service**.
-2. Select **Build and deploy from a Git repository** and connect your GitHub account.
-3. Choose the `rag-project-nextleap-2` repository.
-4. Fill in the deployment details:
-   - **Name**: `rag-backend` (or whatever you prefer)
-   - **Environment**: `Python 3`
-   - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `uvicorn src.api.main:app --host 0.0.0.0 --port 10000` (Render defaults to port 10000, though `$PORT` also works).
-5. Scroll down to **Advanced** to set environment variables.
-
-### Step 2.3: Set Environment Variables
-1. Under **Environment Variables**, click **Add Environment Variable**.
-2. Add the following:
-   - Key: `GROQ_API_KEY`
-   - Value: Paste your Groq API key here.
-3. Select the **Free** instance type and click **Create Web Service**.
-
-### Step 2.4: Generate a Public Domain
-1. Render will start building your project. This might take 3-5 minutes.
-2. Once deployed, you will see a URL at the top left of your dashboard under the service name (e.g., `https://rag-backend-xyz.onrender.com`).
-3. **Copy this URL**. You will need this for the frontend!
+This guide outlines the steps to deploy the **Mutual Fund FAQ Assistant** with the backend hosted on **Railway** and the frontend hosted on **Vercel**.
 
 ---
 
-## 3. Frontend Deployment (Vercel)
+## Prerequisites
 
-The frontend is a static site (HTML/JS/CSS) located in the `frontend/` directory.
+- A GitHub account with the project repository (`rag-project-nextleap-2`) pushed to the `main` branch.
+- A [Railway](https://railway.app/) account.
+- A [Vercel](https://vercel.com/) account.
+- A Groq API key from [console.groq.com/keys](https://console.groq.com/keys).
 
-### Step 3.1: Update the API URL
-Before deploying to Vercel, you need to tell the frontend to talk to your new Render backend instead of `localhost`.
-1. Open `frontend/app.js` in your code editor.
-2. Locate the `fetch` call in the `handleSendMessage` function (around line 108).
-3. Change `'http://127.0.0.1:8000/api/chat'` to point to your Render domain:
-   ```javascript
-   // Change this:
-   const response = await fetch('http://127.0.0.1:8000/api/chat', ...
-   
-   // To this (replace with your actual Render URL):
-   const response = await fetch('https://YOUR-RENDER-DOMAIN.onrender.com/api/chat', ...
+---
+
+## Part 1 — Backend Deployment on Railway
+
+### Step 1: Prepare the Repository
+
+Make sure the following files are committed and pushed to `main`:
+
+1. **`requirements.txt`** at the project root with all Python dependencies.
+2. **`Procfile`** at the project root with the following content:
    ```
-4. Commit this change and push it to GitHub:
+   web: uvicorn src.api.main:app --host 0.0.0.0 --port $PORT
+   ```
+3. **`data/processed/*.json`** files so the RAG pipeline can load data at startup.
+
+### Step 2: Create a New Project on Railway
+
+1. Go to [railway.app/dashboard](https://railway.app/dashboard).
+2. Click **New Project**.
+3. Select **Deploy from GitHub repo**.
+4. Connect your GitHub account if prompted.
+5. Select the `rag-project-nextleap-2` repository.
+6. Railway will automatically detect Python and start building.
+
+### Step 3: Add Environment Variables
+
+1. Click on your newly created service in the Railway dashboard.
+2. Go to the **Variables** tab.
+3. Click **New Variable** and add:
+   - `GROQ_API_KEY` = `<your Groq API key>`
+4. Railway will automatically redeploy after saving.
+
+### Step 4: Generate a Public Domain
+
+1. Click on your service and go to the **Settings** tab.
+2. Scroll down to the **Networking** section.
+3. Click **Generate Domain**.
+4. Copy the generated URL (e.g., `https://rag-project-nextleap-2-production.up.railway.app`).
+
+### Step 5: Verify the Backend
+
+Visit the following URL in your browser:
+
+```
+https://<your-railway-domain>/api/health
+```
+
+You should see:
+
+```json
+{ "status": "ok" }
+```
+
+---
+
+## Part 2 — Frontend Deployment on Vercel
+
+### Step 1: Update the Backend URL in the Frontend
+
+1. Open `frontend/app.js`.
+2. On line 117, change:
+   ```javascript
+   const response = await fetch('http://127.0.0.1:8000/api/chat', {
+   ```
+   to:
+   ```javascript
+   const response = await fetch('https://<your-railway-domain>/api/chat', {
+   ```
+   Replace `<your-railway-domain>` with the actual Railway URL you copied earlier.
+
+3. Commit and push:
    ```bash
    git add frontend/app.js
-   git commit -m "Update backend API URL for production on Render"
+   git commit -m "Update API URL to Railway backend"
    git push origin main
    ```
 
-### Step 3.2: Deploy to Vercel
-1. Go to the [Vercel Dashboard](https://vercel.com/dashboard) and click **Add New** > **Project**.
-2. Import the `rag-project-nextleap-2` repository.
-3. In the **Configure Project** section:
-   - **Framework Preset**: Leave as `Other`.
-   - **Root Directory**: Click **Edit** and select the `frontend` folder.
-   - **Build Command**: Leave blank (not needed for plain HTML/JS).
-   - **Output Directory**: Leave blank.
-4. Click **Deploy**.
+### Step 2: Deploy to Vercel
 
-## 4. Final Verification
-- Once Vercel finishes deploying, click on your newly generated Vercel URL.
-- Try asking the AI a question (e.g., "What is the exit load?").
-- If you receive a correct response, your full stack is successfully deployed in the cloud! Note that Render's free tier spins down after 15 minutes of inactivity, so the very first request you make after a pause might take ~30-50 seconds to wake the server up.
+1. Go to [vercel.com/dashboard](https://vercel.com/dashboard).
+2. Click **Add New** → **Project**.
+3. Import the `rag-project-nextleap-2` repository.
+4. Configure the project:
+   - **Framework Preset**: `Other`
+   - **Root Directory**: Click **Edit** and select `frontend`
+   - **Build Command**: Leave blank
+   - **Output Directory**: Leave blank
+5. Click **Deploy**.
 
-## Additional Notes (CORS)
-FastAPI automatically blocks requests from unknown domains for security. Ensure that `src/api/main.py` has CORS configured to allow your Vercel domain. 
+### Step 3: Verify the Frontend
 
-In `src/api/main.py`, make sure you have:
+1. Open the Vercel URL provided after deployment.
+2. Ask the chatbot a question like *"What is the exit load?"*.
+3. If you get a response, the deployment is successful.
+
+---
+
+## CORS Configuration
+
+The backend already allows cross-origin requests from any domain. This is configured in `src/api/main.py`:
+
 ```python
-from fastapi.middleware.cors import CORSMiddleware
-
-app = FastAPI()
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # For strict security in production, replace "*" with your exact Vercel URL
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 ```
-Since this is already implemented in your codebase, you should not face any CORS issues!
+
+For production, you can replace `"*"` with your Vercel URL for stricter security.
+
+---
+
+## Troubleshooting
+
+| Problem | Solution |
+|---|---|
+| Railway fails with "No start command" | Make sure `Procfile` exists at the project root |
+| `ModuleNotFoundError` on Railway | Check `requirements.txt` has all dependencies |
+| Frontend says "Backend not available" | Verify the Railway URL in `frontend/app.js` is correct |
+| CORS errors in browser console | Check `allow_origins` in `src/api/main.py` |

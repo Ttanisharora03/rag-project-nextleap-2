@@ -452,6 +452,7 @@ End-to-end integration testing, edge case validation, bug fixing, documentation,
 | 7.11 | Final code cleanup | Remove debug logs, add docstrings, consistent formatting across all `src/` files. |
 | 7.12 | Verify deployment steps | Follow README from scratch on a clean environment to confirm setup works. |
 | 7.13 | Final git commit & tag | Tag as `v1.0.0`. |
+| 7.14 | Scheduled Data Refresh | Set up a GitHub Actions workflow (`.github/workflows/scheduler.yml`) using a cron trigger to periodically run the data ingestion pipeline and keep the vectorstore up-to-date. |
 
 ### Test Matrix
 
@@ -495,6 +496,7 @@ End-to-end integration testing, edge case validation, bug fixing, documentation,
 - [ ] All code has docstrings
 - [ ] Disclaimer present in README and UI
 - [ ] Repository tagged `v1.0.0`
+- [ ] GitHub Actions scheduler configured for periodic ingestion
 
 ---
 
