@@ -1,4 +1,5 @@
 import logging
+import os
 # pyrefly: ignore [missing-import]
 from fastapi import FastAPI
 # pyrefly: ignore [missing-import]
@@ -21,9 +22,13 @@ app = FastAPI(
 )
 
 # CORS middleware
+# Load FRONTEND_URL from environment variables for secure CORS. Defaults to "*" (allow all) if not set.
+frontend_url = os.getenv("FRONTEND_URL", "*")
+allow_origins = [url.strip() for url in frontend_url.split(",")] if frontend_url != "*" else ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # For production, restrict this to the frontend domain
+    allow_origins=allow_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
