@@ -113,8 +113,13 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const currentFundName = document.querySelector('.header-titles h1')?.textContent || "ICICI Prudential Large Cap Fund";
             
-            // Use absolute URL to support opening index.html directly from file system
-            const response = await fetch('http://127.0.0.1:8000/api/chat', {
+            // Dynamically determine the backend URL based on environment
+            let apiUrl = '/api/chat';
+            if (window.location.protocol === 'file:' || window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') {
+                apiUrl = 'http://127.0.0.1:8000/api/chat';
+            }
+            
+            const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ query, fund_name: currentFundName })
